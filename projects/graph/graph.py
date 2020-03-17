@@ -145,7 +145,34 @@ class Graph:
                     MAKE A COPY OF TH EPATH
                     ENQUEUE THE COPY 
         """
-        pass  # TODO
+        q = Queue() 
+        #enqueue a path to the starting vertex
+        q.enqueue([starting_vertex])
+        #create an empty set to store visited vertices
+        visited = set()
+        #while the queue is not empty
+        while q.size() > 0:
+            #dequeue the first path
+            path = q.dequeue()
+            #grab the vertex from the end of the path
+            v = path[-1]
+            #check if it's the target
+            if v == destination_vertex:
+                #if so, return path
+                return path 
+
+            #check if its been visitied
+            #if it has NOT been visited
+            if v not in visited:
+                #mark as visitied
+                print(v)
+                visited.add(v)
+                #add all neighbors to the back of the queue
+                for neighbor in self.get_neighbors(v):
+                    #make copy of path before adding
+                    copy = path.copy() 
+                    copy.append(neighbor)
+                    q.enqueue(copy)
 
     def dfs(self, starting_vertex, destination_vertex):
         """
