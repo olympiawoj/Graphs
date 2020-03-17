@@ -55,10 +55,7 @@ class Graph:
         Queue order = FIFO, first in first out
         Stack = LIFO or FILO, last in first out or first in last out
         Stack is related to recursion
-
-
         """
-
         q = Queue()
         q.enqueue(starting_vertex)
         visited = set()
@@ -110,6 +107,10 @@ class Graph:
         If NOT..
             Mark it as visited
             Call dft_recursive on each neighbor
+
+        Biggest diff between graphs and trees is that graphs can be cyclic and loop back
+        Trees always start from a root, but w/e you do a traversal you start from a root
+        Big diff is dealing with cycles which is why we add visited note
         """
 
         # Check if the node is visited
@@ -118,7 +119,7 @@ class Graph:
         # Hint: https://docs.python-guide.org/writing/gotchas/
         # If not...
         if starting_vertex not in visited:
-            # Mark it as visited
+            # Mark starting vertex as visited
             visited.add(starting_vertex)
             # Print
             print(starting_vertex)
@@ -165,24 +166,71 @@ class Graph:
             #if it has NOT been visited
             if v not in visited:
                 #mark as visitied
-                print(v)
+                # print(v)
                 visited.add(v)
-                #add all neighbors to the back of the queue
+                #enqueue a PATH to all its neighbors
                 for neighbor in self.get_neighbors(v):
-                    #make copy of path before adding
+                    #make copy of path before adding, so no reference issues
                     copy = path.copy() 
                     copy.append(neighbor)
+                    #enqueue the copy
                     q.enqueue(copy)
 
+    ##breadth (queue) --> depth (stack)
+    #depth NOt gteed to give shortesst path, breadth is
     def dfs(self, starting_vertex, destination_vertex):
         """
         Return a list containing a path from
         starting_vertex to destination_vertex in
         depth-first order.
-        """
-        pass  # TODO
 
-    def dfs_recursive(self, starting_vertex):
+        Create a stack
+        PUSH A PATH TO the stacking vertex to the stack
+        Create an empty set to store visited vertices
+        While the stach is not empty..
+            POP the first PATH
+            GRAB THE VERTEX FROM THE END OF THE PATH
+            Check if it's the target - if so, return the path
+            Check if it's been visited
+            If it hasn't been visited..
+                Mark it as visited
+                APPEND a PATH TO all it's neighbors on top of the stack
+                    MAKE A COPY OF THE path before adding
+                    append neighbor to copy
+                    push to set 
+        """
+        # Create a stack
+        s = Stack()
+        # Push A PATH TO the starting vertex
+        s.push( [starting_vertex] )
+        # Create a set to store visited vertices
+        visited = set()
+        # While the stack is not empty...
+        while s.size() > 0:
+            # Pop the first PATH
+            path = s.pop()
+            # GRAB THE VERTEX FROM THE END OF THE PATH
+            v = path[-1]
+            # Check if it's been visited
+            # If it hasn't been visited...
+            if v not in visited:
+                # Mark it as visited
+                visited.add(v)
+                # CHECK IF IT'S THE TARGET
+                if v == destination_vertex:
+                    # IF SO, RETURN THE PATH
+                    return path
+                # Enqueue A PATH TO all it's neighbors
+                for neighbor in self.get_neighbors(v):
+                    # MAKE A COPY OF THE PATH
+                    path_copy = path.copy()
+                    path_copy.append(neighbor)
+                    # PUSH THE COPY
+                    s.push(path_copy)
+
+
+    #also need to store the path
+    def dfs_recursive(self, starting_vertex, destination_vertex, visited=None, path=None):
         """
         Return a list containing a path from
         starting_vertex to destination_vertex in
@@ -190,7 +238,21 @@ class Graph:
 
             
         """
-        pass  # TODO
+        if visited is None:
+            visited = set()
+        if path is None:
+            path = []
+        if starting_vertex not in visited:
+            visited.add(starting_vertex)
+            path_copy = path.copy()
+            path_copy.append(starting_vertex)
+            if starting_vertex == destination_vertex:
+                return path_copy
+            for neighbor in self.get_neighbors(starting_vertex):
+                new_path = self.dfs_recursive(neighbor, destination_vertex, visited, path_copy)
+                if new_path is not None:
+                    return new_path
+        return None
 
 if __name__ == '__main__':
     graph = Graph()  # Instantiate your graph
@@ -234,7 +296,7 @@ if __name__ == '__main__':
     #     1, 2, 4, 3, 7, 6, 5
     #     1, 2, 4, 3, 7, 5, 6
     # '''
-    # graph.bft(1)
+    graph.bft(1)
 
     '''
     Valid DFT paths:
@@ -243,8 +305,12 @@ if __name__ == '__main__':
         1, 2, 4, 7, 6, 3, 5
         1, 2, 4, 6, 3, 5, 7
     '''
-    # graph.dft(1)
+    graph.dft(1)
     graph.dft_recursive(1)
+    #we should print this two times but bc we're storing our set is already filled up, not what we want
+    #reason is bc for some reason,  Python will when it declares it ones, it'll keep a reference to that value for the entire time you have this function
+    #do weird funky syntax - if we initialize visited as None and if its none then set it to set.  
+    # graph.dft_recursive(1)
 
     '''
     Valid BFS path:
@@ -257,5 +323,5 @@ if __name__ == '__main__':
         [1, 2, 4, 6]
         [1, 2, 4, 7, 6]
     '''
-    # print(graph.dfs(1, 6))
-    # print(graph.dfs_recursive(1, 6))
+    print(graph.dfs(1, 6))
+    print(graph.dfs_recursive(1, 6))
